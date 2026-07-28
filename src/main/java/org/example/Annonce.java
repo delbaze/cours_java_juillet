@@ -67,4 +67,9 @@ public class Annonce {
             return new Annonce(this);
         }
     }
+
+//    public Annonce findById(long id) {
+//        return repository.findById(id)
+//                .orElseThrow(() => new AnnonceNotFoundException(id));
+//    }
 }
