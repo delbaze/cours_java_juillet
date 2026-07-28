@@ -1,7 +1,6 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Agence {
     private final String nomAgence;
@@ -27,5 +26,24 @@ public class Agence {
         String genererRapport() {
             return "Rapport pour " + nomVisiteur + ", agence " + nomAgence;
         }
+    }
+
+    public Map<StatutAnnonce, List<Annonce>> grouperParStatut() {
+        Map<StatutAnnonce, List<Annonce>> parStatut = new EnumMap<>(StatutAnnonce.class);
+        for (Annonce annonce : annonces) {
+            parStatut.computeIfAbsent(annonce.getStatut(), s -> new ArrayList<>()).add(annonce);
+        }
+        return parStatut;
+    }
+
+    public List<Annonce> annoncesPubliables() {
+        EnumSet<StatutAnnonce> statutsOk = StatutAnnonce.statutsPubliables();
+        List<Annonce> resultat = new ArrayList<>();
+        for (Annonce annonce : annonces) {
+            if (statutsOk.contains(annonce.getStatut())) {
+                resultat.add(annonce);
+            }
+        }
+        return resultat;
     }
 }
