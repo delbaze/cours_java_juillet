@@ -5,6 +5,7 @@ public class Annonce {
     private final double prix;
     private final BienImmobilier bien;
     private final String description;
+    private final String ville;
     private final StatutAnnonce statut;
 
     private Annonce(Builder builder) {
@@ -13,12 +14,17 @@ public class Annonce {
         this.prix = builder.prix;
         this.bien = builder.bien;
         this.description = builder.description;
+        this.ville = builder.ville;
         this.statut = builder.statut;
 
     }
-    public StatutAnnonce getStatut() {
-        return statut;
-    }
+    public Long getId() { return id; }
+    public String getTitre() { return titre; }
+    public double getPrix() { return prix; }
+    public String getVille() { return ville; }
+    public BienImmobilier getBien() { return bien; }
+    public String getDescription() { return description; }
+    public StatutAnnonce getStatut() { return statut; }
 
     public static class Builder {
         private Long id;
@@ -26,6 +32,7 @@ public class Annonce {
         private double prix;
         private BienImmobilier bien;
         private String description;
+        private String ville;
         private StatutAnnonce statut = StatutAnnonce.BROUILLON;
 
 
@@ -54,6 +61,8 @@ public class Annonce {
             this.description = description;
             return this;
         }
+
+        public Builder avecVille(String ville) { this.ville = ville; return this; }
 
         public Builder avecStatut(StatutAnnonce statut) {
             this.statut = statut;

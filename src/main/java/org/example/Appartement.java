@@ -16,8 +16,4 @@ public final class Appartement extends Habitation {
         return surface * 2500 * (1 + etage * 0.01);
     }
 
-    @Override
-    public Appartement copier() {
-        return new Appartement(surface, nombrePieces, etage);
-    }
 }

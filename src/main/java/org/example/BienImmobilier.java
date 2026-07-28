@@ -12,8 +12,9 @@ public abstract class BienImmobilier {
 
     public abstract double calculerValeur();
 
-    public BienImmobilier copier() {
-        throw new UnsupportedOperationException("Copie non implementee pour ce type de bien");
+
+    public double getSurface() {
+        return surface;
     }
 }
 
