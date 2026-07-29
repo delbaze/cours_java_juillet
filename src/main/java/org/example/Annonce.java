@@ -1,5 +1,5 @@
 package org.example;
-public class Annonce {
+public class Annonce implements Comparable<Annonce> {
     private final Long id;
     private final String titre;
     private final double prix;
@@ -25,6 +25,11 @@ public class Annonce {
     public BienImmobilier getBien() { return bien; }
     public String getDescription() { return description; }
     public StatutAnnonce getStatut() { return statut; }
+
+    @Override
+    public int compareTo(Annonce autre) {
+        return Double.compare(this.prix, autre.prix);
+    }
 
     public static class Builder {
         private Long id;

@@ -59,12 +59,10 @@ public class Main {
                 .flatMap(a -> a.getAnnonces().stream())
                 .forEach(a -> System.out.println(a.getTitre() + " : " + BienService.description(a.getBien())));
 
-        // Etape 2 — flatMap
         List<Annonce> toutesLesAnnonces = agences.stream()
                 .flatMap(a -> a.getAnnonces().stream())
                 .toList();
 
-        // Etape 3 — filter puis collect
         List<String> titresAbordablesPublies = toutesLesAnnonces.stream()
                 .filter(a -> a.getStatut() == StatutAnnonce.PUBLIEE)
                 .filter(a -> a.getPrix() < 400000)
@@ -72,30 +70,25 @@ public class Main {
                 .toList();
         System.out.println(titresAbordablesPublies);
 
-        // Etape 4 — groupement avec comptage
         Map<String, Long> nbParVille = toutesLesAnnonces.stream()
                 .collect(Collectors.groupingBy(Annonce::getVille, Collectors.counting()));
         System.out.println(nbParVille);
 
-        // Etape 5 — groupement avec moyenne
         Map<String, Double> prixMoyenParVille = toutesLesAnnonces.stream()
                 .collect(Collectors.groupingBy(Annonce::getVille, Collectors.averagingDouble(Annonce::getPrix)));
         System.out.println(prixMoyenParVille);
 
-        // Etape 6 — tri puis limit
         toutesLesAnnonces.stream()
                 .sorted(Comparator.comparingDouble(Annonce::getPrix).reversed()
                         .thenComparing(Annonce::getTitre))
                 .limit(3)
                 .forEach(a -> System.out.println(a.getTitre() + " - " + a.getPrix()));
 
-        // Etape 7 — statistiques
         DoubleSummaryStatistics stats = toutesLesAnnonces.stream()
                 .collect(Collectors.summarizingDouble(Annonce::getPrix));
         System.out.println("Min " + stats.getMin() + " Max " + stats.getMax()
                 + " Moyenne " + stats.getAverage() + " Total " + stats.getSum());
 
-        // Etape 8 — findFirst et ifPresentOrElse
         Optional<Annonce> grandeSurface = toutesLesAnnonces.stream()
                 .filter(a -> a.getBien().surface() > 100)
                 .findFirst();
@@ -104,12 +97,42 @@ public class Main {
                 () -> System.out.println("Aucune annonce avec une surface superieure a 100")
         );
 
-        // Etape 9 — anyMatch / allMatch
         boolean yADesCheres = toutesLesAnnonces.stream().anyMatch(a -> a.getPrix() > 500000);
         boolean toutesPubliees = toutesLesAnnonces.stream().allMatch(a -> a.getStatut() == StatutAnnonce.PUBLIEE);
         System.out.println("Au moins une chere : " + yADesCheres);
         System.out.println("Toutes publiees : " + toutesPubliees);
 
+
+        Repository<Annonce> repository = new Repository<>(() -> null);
+        toutesLesAnnonces.forEach(repository::ajouter); // toutesLesAnnonces deja construite comme dans l'exercice streams
+
+        Optional<Annonce> studio = repository.trouver(a -> a.getTitre().equals("Studio centre"));
+        studio.ifPresent(a -> System.out.println("Trouve : " + a.getTitre()));
+
+        System.out.println("Nombre total dans le repository : " + repository.tous().size());
+
+
+        Annonce laPlusChere = Utilitaires.maximum(toutesLesAnnonces);
+        System.out.println("La plus chere : " + laPlusChere.getTitre());
+
+        // wildcard extends, testee avec List<Appartement> precisement
+        List<Appartement> appartements = List.of(
+                new Appartement(25, 1, 4),
+                new Appartement(65, 3, 2)
+        );
+        System.out.println("Valeur totale appartements : " + Utilitaires.sommeValeurs(appartements));
+
+        // Wildcard super
+        List<Object> archive = new ArrayList<>();
+        Utilitaires.archiverTitres(archive, toutesLesAnnonces);
+        System.out.println(archive);
+
+        Repository<Annonce> repositoryAvecFabrique = new Repository<>(() ->
+                new Annonce.Builder().avecId(0L).avecTitre("Vide").avecPrix(1.0)
+                        .avecVille("").avecBien(new Terrain(1, false)).build()
+        );
+        Annonce vide = repositoryAvecFabrique.creerVide();
+        System.out.println(vide.getTitre());
 
     }
 
