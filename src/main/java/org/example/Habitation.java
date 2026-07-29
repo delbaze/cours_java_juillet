@@ -1,10 +1,12 @@
 package org.example;
 
-public abstract class Habitation extends BienImmobilier implements Affichable, Journalisable {
+//public abstract class Habitation extends BienImmobilier implements Affichable, Journalisable {
+public abstract class Habitation implements Affichable, Journalisable {
+
     protected int nombrePieces;
 
     public Habitation(double surface, int nombrePieces) {
-        super(surface);
+//        super(surface);
         this.nombrePieces = nombrePieces;
     }
 
