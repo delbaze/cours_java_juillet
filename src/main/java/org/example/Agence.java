@@ -46,4 +46,8 @@ public class Agence {
         }
         return resultat;
     }
+
+    public List<Annonce> getAnnonces() {
+        return annonces;
+    }
 }
