@@ -5,7 +5,7 @@ import org.example.ResultatCommande;
 import java.util.Comparator;
 import java.util.List;
 
-public class Produit {
+public class Produit implements Comparable<Produit> {
 
     public Long id;
     public String nom;
@@ -73,5 +73,10 @@ public class Produit {
 
 
         };
+    }
+
+    @Override
+    public int compareTo(Produit autre) {
+        return Double.compare(this.prix, autre.prix);
     }
 }
