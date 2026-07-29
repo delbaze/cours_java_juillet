@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.Produit.Produit;
+import org.example.Produit.Produit2;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -104,6 +105,50 @@ public class Main {
         boolean toutesPubliees = toutesLesAnnonces.stream().allMatch(a -> a.getStatut() == StatutAnnonce.PUBLIEE);
         System.out.println("Au moins une chere : " + yADesCheres);
         System.out.println("Toutes publiees : " + toutesPubliees);
+
+        Produit2 prod = new Produit2("Clavier", 40.00, 10);
+        Produit2 prod2 = new Produit2(prod.nom(), 45.00);
+        Produit2 prod3 = Produit2.enRupture("Souris", 50.00);
+        Produit2 prod4 = Produit2.avecStockInitial("Souris", 50.00, 100);
+        System.out.println(prod);
+        System.out.println(prod2);
+        System.out.println(prod3);
+
+        Paire<String, Double> ligne = new Paire<>("Clavier", 40.00);
+
+        Optional<Produit2> optProduit = Optional.of(prod);
+
+        Optional<Produit> vide = Optional.empty();
+//        Optional<Produit> peutEtreVide = Optional.ofNullable(rechercheProduit(id));
+
+        // Mauvais , on ne gagne rien par rapport à un null check classique
+//        if (optProduit.isPresent()) {
+//            Produit produit = optProduit.get();
+//            System.out.println(produit.nom);
+//        }
+        // execute une action si la valeur est présente
+        optProduit.ifPresent(p -> System.out.println(p.nom()));
+
+        // action si présent, autre action si absent
+        optProduit.ifPresentOrElse(p -> System.out.println("Produit trouvé : " + p.nom()), () -> System.out.println("Aucun produit trouvé"));
+
+        // transforme la valeur si présente
+        Optional<String> nom = optProduit.map(Produit2::nom);
+
+//        Optional<Fournisseur> fournisseur = optProduit.flatMap((p -> trouverFournisseur(p.getFournisseurId())));
+
+//        Produit produit = optProduit.orElse(produitParDefaut); // valeur par défaut
+//        Produit produit = optProduit.orElseGet(() -> creerProduitParDefaut()); // valeur par défaut lazy
+//        Produit produit = optProduit.orElseThrow(() -> new ProduitIntrouvableException("Produit introuvable"));
+
+        // filter (retourne un optional vide si le prédicat échoue)
+//        Optional<Produit> produitAbordable = optProduit.filter(p -> p.prix() < 100);
+        // or retourne un autre Optional si celui ci est vide
+//        Optional<Produit> produit = optProduit.or(() -> rechercherProduitSimilaire());
+
+//        optProduit.stream().map(Produit2::nom).forEach(System.out::println);
+//        optProduit.ifPresent(p -> System.out.println(p.nom()));
+
     }
 
 }
