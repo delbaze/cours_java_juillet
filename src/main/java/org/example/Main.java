@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -19,7 +21,7 @@ import java.util.stream.Stream;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
         var agenceNice = new Agence("ImmoJava Nice");
         agenceNice.ajouter(new Annonce.Builder()
                 .avecId(1L).avecTitre("Studio centre").avecPrix(180000.0)
@@ -214,6 +216,97 @@ public class Main {
         }
 
         System.out.println("Tous les traitements sont terminés");
+
+        // Etape 1 — race condition volontaire
+        int[] compteurNonSur = {0}; // tableau pour contourner effectively final dans la lambda
+        List<Thread> threads1 = new ArrayList<>();
+        for (Annonce a : toutesLesAnnonces) {
+            Thread t = new Thread(() -> compteurNonSur[0]++);
+            threads1.add(t);
+            t.start();
+        }
+        for (Thread t : threads1) t.join();
+        System.out.println("Compteur non synchronise (a rejouer plusieurs fois) : " + compteurNonSur[0]);
+
+        // Etape 2 — correction avec AtomicInteger
+        AtomicInteger compteurSur = new AtomicInteger(0);
+        List<Thread> threads2 = new ArrayList<>();
+        for (Annonce a : toutesLesAnnonces) {
+            Thread t = new Thread(compteurSur::incrementAndGet);
+            threads2.add(t);
+            t.start();
+        }
+        for (Thread t : threads2) t.join();
+        System.out.println("Compteur atomique (toujours correct) : " + compteurSur.get());
+
+        // Etape 3 — ExecutorService, calcul parallele par agence
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+
+        Future<Double> futureNice = pool.submit(() ->
+                agenceNice.getAnnonces().stream()
+                        .mapToDouble(a -> a.getBien().calculerValeur())
+                        .sum()
+        );
+        Future<Double> futureAntibes = pool.submit(() ->
+                agenceAntibes.getAnnonces().stream()
+                        .mapToDouble(a -> a.getBien().calculerValeur())
+                        .sum()
+        );
+
+        double valeurTotale = futureNice.get() + futureAntibes.get();
+        System.out.println("Valeur totale des biens (calcul parallele) : " + valeurTotale);
+
+        pool.shutdown();
+        if (!pool.awaitTermination(10, TimeUnit.SECONDS)) {
+            pool.shutdownNow();
+        }
+
+        // Etape 4 — CompletableFuture et thenCombine
+        ExecutorService poolAsync = Executors.newFixedThreadPool(2);
+
+        CompletableFuture<List<Annonce>> futureRechercheNice = CompletableFuture.supplyAsync(
+                () -> toutesLesAnnonces.stream().filter(a -> a.getVille().equals("Nice")).toList(),
+                poolAsync
+        );
+        CompletableFuture<List<Annonce>> futureRechercheAntibes = CompletableFuture.supplyAsync(
+                () -> toutesLesAnnonces.stream().filter(a -> a.getVille().equals("Antibes")).toList(),
+                poolAsync
+        );
+
+        CompletableFuture<List<Annonce>> futureCombine = futureRechercheNice.thenCombine(
+                futureRechercheAntibes,
+                (nice, antibes) -> {
+                    List<Annonce> toutes = new ArrayList<>(nice);
+                    toutes.addAll(antibes);
+                    return toutes;
+                }
+        );
+
+        System.out.println("Resultat combine : " + futureCombine.join().size() + " annonce(s)");
+
+        // Etape 5 — panne simulee et fallback
+        CompletableFuture<List<Annonce>> futureEnPanne = CompletableFuture.supplyAsync(() -> {
+            throw new RuntimeException("Service de recherche indisponible");
+        }, poolAsync).exceptionally(erreur -> {
+            System.out.println("Recherche en erreur, fallback : " + erreur.getCause().getMessage());
+            return Collections.emptyList();
+        });
+
+        System.out.println("Resultat apres panne : " + futureEnPanne.join().size() + " annonce(s)");
+
+        poolAsync.shutdown();
+        poolAsync.awaitTermination(10, TimeUnit.SECONDS);
+
+        // Etape 6 — ConcurrentHashMap depuis plusieurs threads
+        ConcurrentHashMap<String, Integer> compteurParVille = new ConcurrentHashMap<>();
+        List<Thread> threads3 = new ArrayList<>();
+        for (Annonce a : toutesLesAnnonces) {
+            Thread t = new Thread(() -> compteurParVille.merge(a.getVille(), 1, Integer::sum));
+            threads3.add(t);
+            t.start();
+        }
+        for (Thread t : threads3) t.join();
+        System.out.println("Comptage concurrent par ville (toujours correct) : " + compteurParVille);
 
 
     }
