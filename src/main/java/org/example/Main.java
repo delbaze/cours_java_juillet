@@ -134,6 +134,101 @@ public class Main {
         Annonce vide = repositoryAvecFabrique.creerVide();
         System.out.println(vide.getTitre());
 
+        TreeSet<Double> prixTries = new TreeSet<>(Set.of(150.0, 320.0, 89.0, 500.0));
+        System.out.println(prixTries.first());
+        System.out.println(prixTries.last());
+        System.out.println(prixTries.higher(150.0));
+        System.out.println(prixTries.floor(200.0));
+
+        Map<String, Produit> parNom = new HashMap();
+        Map<String, Produit> parNomOrdonne = new LinkedHashMap<>();
+        Map<String, Produit> parNomTrie = new TreeMap<>();
+
+
+        Map<String, Integer> compteur = new HashMap();
+
+        compteur.computeIfAbsent("Clavier", k -> 0);
+
+        compteur.merge("Clavier", 1, Integer::sum);// incrément ou initialise à 1 si absent
+
+        int quantite = compteur.getOrDefault("Souris", 0);
+        compteur.putIfAbsent("Ecran", 5);
+
+        compteur.compute("Clavier", (k, v) -> v == null ? 1 : v + 1);
+
+//        Map<String, Integer> stockParCategorie = new HashMap();
+//        for (Produit p : produits) {
+//            stockParCategorie.merge(p.getCategorie(), p.getStock(), Integer::sum);
+//        }
+        // { "Informatique" : 145, "Jardin": 50, ...}
+//
+//        Deque<Produit> pile = new ArrayDeque<>();
+//        pile.push(produit1);
+//        pile.pop();
+//
+//        Deque<Produit> file = new ArrayDeque<>();
+//        file.offer(produit1); // enfile
+//        file.poll(); // défile
+//
+//        Queue<Produit> parPrix = new PriorityQueue<>(Comparator.comparing(Produit::getPrix));
+//        parPrix.offer((new Produit("Clavier", 59.0, 10, 3L)));
+//        parPrix.poll(); // retourne et retire le moins cher
+//
+//        Queue<String> file = new ArrayDeque<>();
+//        file.offer("Clavier");
+//        file.poll(); // gere le cas vide
+//
+//        file.peek(); // plante pas si vide
+//
+//        List<String> liste = new ArrayList<>();
+//        liste.add("Clavier");
+//        liste.remove(0);
+//        liste.get(0);
+
+        // add(0, e) / remove(0)
+//        push() pop()
+
+//        ArrayList remove(0) => O(n)
+//        ArrayDeque : retire le premier ou dernier est O(1)
+        //
+
+
+        // Créer directmeent une collection immuable
+        List<String> categories = List.of("Informatique", "Jardiin", "Mode");
+        Set<String> tags = Set.of("promo", "nouveau");
+        Map<String, Double> prixParDefaut = Map.of("Clavier", 49.00, "Souris", 19.90);
+
+        List<String> modifiable = new ArrayList<>(List.of("a", "b"));
+        List<String> vueImmuable = Collections.unmodifiableList(modifiable);
+        modifiable.add("c");
+
+        System.out.println(vueImmuable);
+//        vueImmuable.add("c");
+
+        Produit p1 = new Produit("test 1", 10.00, 30, 1L);
+        Produit p2 = new Produit("test 2", 10.00, 0, 2L);
+        Produit p3 = new Produit("test 1", 20.00, 43, 3L);
+
+        List<Produit> produits = new ArrayList<>(List.of(p1, p2, p3));
+
+        for (Produit p : produits) {
+            System.out.println(p.getQuantite());
+            if (p.getQuantite() == 0) {
+                produits.remove(p); // ConcurrentModificationException
+            }
+        }
+
+        produits.removeIf(p -> p.getQuantite() == 0); // garantie qu'on peut modifié un itérateur pendant qu'on le parcours
+
+        // sinon manuellement :
+//        Iterator<Produit> it = produits.iterator();
+//        while (it.hasNext()) {
+//            Produit p = it.next();
+//            if (p.getQuantite() == 0) {
+//                it.remove(); // sûr l'itérateur sait qu'il vient lui même de modifier la structure
+//            }
+//        }
     }
+
 
 }
