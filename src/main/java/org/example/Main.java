@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.*;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         var agenceNice = new Agence("ImmoJava Nice");
         agenceNice.ajouter(new Annonce.Builder()
                 .avecId(1L).avecTitre("Studio centre").avecPrix(180000.0)
@@ -187,6 +188,38 @@ public class Main {
         } catch (ConcurrentModificationException e) {
             System.out.println("Exception attendue : " + e.getClass().getSimpleName());
         }
+
+        System.out.println("----Exercice Files----");
+        AnnonceCsvService csvService = new AnnonceCsvService();
+        Path fichierTemp = Files.createTempFile("immojava-", ".csv");
+
+        csvService.exporterCsv(toutesLesAnnonces, fichierTemp);
+        List<AnnonceImportee> reimportees = csvService.importerCsv(fichierTemp);
+        System.out.println("Correspondance : " + (reimportees.size() == toutesLesAnnonces.size()));
+
+        Files.writeString(fichierTemp, "Annonce cassee;PAS_UN_PRIX;Nice;APPARTEMENT\n", StandardOpenOption.APPEND);
+        List<AnnonceImportee> apresErreur = csvService.importerCsv(fichierTemp);
+        System.out.println("Toujours " + toutesLesAnnonces.size() + " lignes valides : " + (apresErreur.size() == toutesLesAnnonces.size()));
+
+
+        List<Thread> threads = new ArrayList<>();
+        for (Annonce a : toutesLesAnnonces) {
+            Thread t = new Thread(() -> traiter(a));
+//            t.setDaemon(true); // à false : la JVM attend qu'il finisse avant de s'arrêter (cas : Traitements importants), à true : la JVM ne l'attend pas, elle s'arrête même s'il tourne encore (cas : surveillance, logs, nettoyage)
+            threads.add(t);
+            t.start();
+        }
+        for (Thread t : threads) {
+            t.join(); // bloque le thread principal jusqu'à ce que le thread t soit terminé, et comme on le fait pour chaque thread on attend que tous les threads soient finis.
+        }
+
+        System.out.println("Tous les traitements sont terminés");
+
+
+    }
+
+    private static void traiter(Annonce a) {
+        System.out.println("Annonce : " + a.getTitre());
     }
 
 
