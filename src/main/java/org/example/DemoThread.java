@@ -29,25 +29,25 @@ public class DemoThread {
         for (Thread t : threads) t.join();
 //        System.out.println(compteur.total);
 
-        ExecutorService pool = Executors.newFixedThreadPool(4);
-        pool.execute(() -> traiter(annonce));
-
-        Future<Double> future = pool.submit(() -> calculerValeurTotal(annonce));
-
-        try {
-            Double resultat = future.get(5, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-        } catch (TimeoutException e) {
-            future.cancel(true);
-        }
-
-        pool.shutdown(); // refuse les nouvelles tâches, attend la fin de celles en cours
-        if (!pool.awaitTermination(30, TimeUnit.SECONDS)) pool.shutdownNow();
-
-
-        CompletableFuture<List<Annonce>> futureNice = CompletableFuture.supplyAsync(() -> rechercherParVille("Nice"), pool);
-
-        CompletableFuture<Integer> futureNombre = futureNice.thenApply(List::size);
+//        ExecutorService pool = Executors.newFixedThreadPool(4);
+//        pool.execute(() -> traiter(annonce));
+//
+//        Future<Double> future = pool.submit(() -> calculerValeurTotal(annonce));
+//
+//        try {
+//            Double resultat = future.get(5, TimeUnit.SECONDS);
+//        } catch (ExecutionException e) {
+//            Throwable cause = e.getCause();
+//        } catch (TimeoutException e) {
+//            future.cancel(true);
+//        }
+//
+//        pool.shutdown(); // refuse les nouvelles tâches, attend la fin de celles en cours
+//        if (!pool.awaitTermination(30, TimeUnit.SECONDS)) pool.shutdownNow();
+//
+//
+//        CompletableFuture<List<Annonce>> futureNice = CompletableFuture.supplyAsync(() -> rechercherParVille("Nice"), pool);
+//
+//        CompletableFuture<Integer> futureNombre = futureNice.thenApply(List::size);
     }
 }

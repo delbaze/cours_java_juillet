@@ -285,7 +285,7 @@ public class Main {
         System.out.println("Resultat combine : " + futureCombine.join().size() + " annonce(s)");
 
         // Etape 5 — panne simulee et fallback
-        CompletableFuture<List<Annonce>> futureEnPanne = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<List<Annonce>> futureEnPanne = CompletableFuture.<List<Annonce>>supplyAsync(() -> {
             throw new RuntimeException("Service de recherche indisponible");
         }, poolAsync).exceptionally(erreur -> {
             System.out.println("Recherche en erreur, fallback : " + erreur.getCause().getMessage());
